@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio de Drinks Interativo</title>
+    <style>
+        :root {
+            --cor-primaria: #350616;    /* Vinho como fundo principal */
+            --cor-secundaria: #e2ceb1;  /* Bege para detalhes */
+            --cor-texto: #e2ceb1;       /* Texto em bege */
+            --cor-fundo-card: #4a0a1f;  /* Cards em vinho mais claro */
+            --cor-borda: #5d1226;       /* Bordas em vinho */
+            --cor-destaque: #f5e9d8;    /* Bege claro para ênfase */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto);
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--cor-secundaria);
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--cor-secundaria);
+            padding-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .filters {
+            background-color: var(--cor-fundo-card);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            border: 1px solid var(--cor-borda);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        select, button {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--cor-borda);
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        select {
+            background-color: var(--cor-fundo-card);
+            color: var(--cor-texto);
+            min-width: 200px;
+            border: 1px solid var(--cor-secundaria);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--cor-destaque);
+        }
+
+        button {
+            background-color: var(--cor-secundaria);
+            color: var(--cor-primaria);
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+
+        button:hover {
+            background-color: var(--cor-destaque);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #drinks-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .drink-card {
+            background-color: var(--cor-fundo-card);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--cor-borda);
+        }
+
+        .drink-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            border-color: var(--cor-secundaria);
+        }
+
+        .drink-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border: 1px solid var(--cor-borda);
+        }
+
+        .drink-card h3 {
+            margin: 10px 0;
+            color: var(--cor-secundaria);
+        }
+
+        .drink-card p {
+            margin: 5px 0;
+            color: var(--cor-texto);
+        }
+
+        .drink-card .price {
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--cor-destaque);
+        }
+
+        .cart {
+            background-color: var(--cor-fundo-card);
+            padding: 20px;
+            border-radius: 10px;
+            position: sticky;
+            bottom: 20px;
+            border: 1px solid var(--cor-borda);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .cart h2 {
+            margin-top: 0;
+            color: var(--cor-secundaria);
+            border-bottom: 1px solid var(--cor-secundaria);
+            padding-bottom: 8px;
+        }
+
+        #cart-items {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+            padding-right: 5px;
+        }
+
+        /* Scrollbar personalizada */
+        #cart-items::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #cart-items::-webkit-scrollbar-track {
+            background: var(--cor-fundo-card);
+        }
+
+        #cart-items::-webkit-scrollbar-thumb {
+            background-color: var(--cor-secundaria);
+            border-radius: 3px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--cor-borda);
+            gap: 10px;
+        }
+
+        .drink-info {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .drink-info small {
+            color: #d4b999;
+            font-size: 0.9em;
+        }
+
+        .gelo-options select {
+            padding: 8px;
+            border-radius: 6px;
+            background: var(--cor-fundo-card);
+            color: var(--cor-texto);
+            border: 1px solid var(--cor-secundaria);
+            font-size: 13px;
+        }
+
+        .price-delete {
+            text-align: right;
+            min-width: 80px;
+        }
+
+        .price-delete button {
+            background: transparent;
+            color: var(--cor-secundaria);
+            border: 1px solid var(--cor-secundaria);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .price-delete button:hover {
+            background: var(--cor-secundaria);
+            color: var(--cor-primaria);
+        }
+
+        #total {
+            font-weight: bold;
+            font-size: 20px;
+            text-align: right;
+            margin: 15px 0;
+            color: var(--cor-secundaria);
+        }
+
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            select {
+                width: 100%;
+            }
+            
+            #drinks-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Cardápio de Drinks</h1>
+    
+    <!-- Filtros -->
+    <div class="filters">
+        <select id="bebida">
+            <option value="">Todas as Bebidas</option>
+        </select>
+        
+        <select id="sabor-bebida">
+            <option value="">Todos os Sabores</option>
+        </select>
+        
+        <select id="energetico">
+            <option value="">Todos os Energéticos</option>
+        </select>
+        
+        <select id="sabor-energetico">
+            <option value="">Todos os Sabores</option>
+        </select>
+        
+        <button onclick="filtrarDrinks()">Filtrar</button>
+    </div>
+
+    <!-- Lista de Drinks -->
+    <div id="drinks-list"></div>
+
+    <!-- Carrinho -->
+    <div class="cart">
+        <h2>Seu Pedido</h2>
+        <div id="cart-items"></div>
+        <div id="total">Total: R$ 0.00</div>
+        <button onclick="finalizarPedido()">Finalizar Pedido (WhatsApp)</button>
+    </div>
+
+    <script>
+        // Dados completos da sua planilha
+        const drinks = [
+            { bebida: "Ballantine's", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tradicional", preco: 26.4 },
+            { bebida: "Ballantine's", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tropical", preco: 26.4 },
+            { bebida: "Ballantine's", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tropical", preco: 30.6 },
+            { bebida: "Ballantine's", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tradicional", preco: 30.6 },
+            { bebida: "Jack Daniel's", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tradicional", preco: 30 },
+            { bebida: "Jack Daniel's", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tropical", preco: 33.99 },
+            { bebida: "Jack Daniel's", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tropical", preco: 30 },
+            { bebida: "Jack Daniel's", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tradicional", preco: 33.99 },
+            { bebida: "Jack Daniel's", sabor_bebida: "Maçã Verde", energetico: "REDBULL", sabor_energetico: "Tradicional", preco: 32 },
+            { bebida: "Jack Daniel's", sabor_bebida: "Maçã Verde", energetico: "VIBE", sabor_energetico: "Tradicional", preco: 30 },
+            { bebida: "Jack Daniel's", sabor_bebida: "Maçã Verde", energetico: "BALY", sabor_energetico: "Maçã Verde", preco: 28 },
+            { bebida: "White Horse", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tropical", preco: 24 },
+            { bebida: "White Horse", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tropical", preco: 28 },
+            { bebida: "White Horse", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tradicional", preco: 28 },
+            { bebida: "White Horse", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tradicional", preco: 24 },
+            { bebida: "Tanqueray", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tropical", preco: 30 },
+            { bebida: "Tanqueray", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tradicional", preco: 25.99 },
+            { bebida: "Tanqueray", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tropical", preco: 25.99 },
+            { bebida: "Tanqueray", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tradicional", preco: 30 },
+            { bebida: "Tanqueray", sabor_bebida: "Tradicional", energetico: "BALY", sabor_energetico: "Maçã Verde", preco: 23.99 },
+            { bebida: "Tanqueray", sabor_bebida: "Tradicional", energetico: "BALY", sabor_energetico: "Melancia", preco: 23.99 },
+            { bebida: "Tanqueray", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Pêssego c/Morango", preco: 30 },
+            { bebida: "Tanqueray", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Pêssego c/Morango", preco: 25.99 },
+            { bebida: "Gordon's", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tropical", preco: 27.5 },
+            { bebida: "Gordon's", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tradicional", preco: 24.5 },
+            { bebida: "Gordon's", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tradicional", preco: 27.5 },
+            { bebida: "Gordon's", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tropical", preco: 24.5 },
+            { bebida: "Gordon's", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Pêssego c/Morango", preco: 24.5 },
+            { bebida: "Gordon's", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Pêssego c/Morango", preco: 27.5 },
+            { bebida: "Gordon's", sabor_bebida: "Tradicional", energetico: "BALY", sabor_energetico: "Maçã Verde", preco: 22.99 },
+            { bebida: "Gordon's", sabor_bebida: "Tradicional", energetico: "BALY", sabor_energetico: "Melancia", preco: 22.99 },
+            { bebida: "Smirnoff", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tradicional", preco: 17.99 },
+            { bebida: "Smirnoff", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tropical", preco: 17.99 },
+            { bebida: "Smirnoff", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Pêssego c/Morango", preco: 17.99 },
+            { bebida: "Smirnoff", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tradicional", preco: 20.8 },
+            { bebida: "Smirnoff", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Pêssego c/Morango", preco: 20.8 },
+            { bebida: "Smirnoff", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tropical", preco: 20.8 },
+            { bebida: "Smirnoff", sabor_bebida: "Tradicional", energetico: "BALY", sabor_energetico: "Maçã Verde", preco: 16.8 },
+            { bebida: "Smirnoff", sabor_bebida: "Tradicional", energetico: "BALY", sabor_energetico: "Melancia", preco: 16.8 },
+            { bebida: "Askov", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tradicional", preco: 14.5 },
+            { bebida: "Askov", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Tropical", preco: 14.5 },
+            { bebida: "Askov", sabor_bebida: "Tradicional", energetico: "VIBE", sabor_energetico: "Pêssego c/Morango", preco: 14.5 },
+            { bebida: "Askov", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tradicional", preco: 16.99 },
+            { bebida: "Askov", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Pêssego c/Morango", preco: 16.99 },
+            { bebida: "Askov", sabor_bebida: "Tradicional", energetico: "REDBULL", sabor_energetico: "Tropical", preco: 16.99 },
+            { bebida: "Askov", sabor_bebida: "Tradicional", energetico: "BALY", sabor_energetico: "Maçã Verde", preco: 12.99 },
+            { bebida: "Askov", sabor_bebida: "Tradicional", energetico: "BALY", sabor_energetico: "Melancia", preco: 12.99 },
+            { bebida: "Eternity", sabor_bebida: "Pêssego e Framboesa", energetico: "BALY", sabor_energetico: "Pêssego c/Morango", preco: 14.5 },
+            { bebida: "Eternity", sabor_bebida: "Melancia", energetico: "BALY", sabor_energetico: "Melancia", preco: 14.5 },
+            { bebida: "Eternity", sabor_bebida: "Tropical", energetico: "VIBE", sabor_energetico: "Tropical", preco: 14.5 },
+            { bebida: "Eternity", sabor_bebida: "Maçã Verde", energetico: "BALY", sabor_energetico: "Maçã Verde", preco: 14.5 },
+            { bebida: "Ballena", sabor_bebida: "Tradicional", energetico: "SMINORFF ICE", sabor_energetico: "Tradicional", preco: 28.7 },
+            { bebida: "Ballena", sabor_bebida: "Tradicional", energetico: "BALY", sabor_energetico: "Melancia", preco: 24.5 }
+        ];
+
+        // Opções de gelo personalizadas
+        const opcoesGelo = [
+            { id: "morango", nome: "Gelo de Morango 🍓" },
+            { id: "melancia", nome: "Gelo de Melancia 🍉" },
+            { id: "coco", nome: "Gelo de Coco 🥥" },
+            { id: "maca_verde", nome: "Gelo de Maçã Verde 🍏" },
+            { id: "maracuja", nome: "Gelo de Maracujá 🍈" },
+        ];
+
+        let carrinho = [];
+
+        // Preenche os filtros quando a página carrega
+        window.onload = function() {
+            preencherFiltros();
+            filtrarDrinks();
+        };
+
+        // Preenche os dropdowns de filtro
+        function preencherFiltros() {
+            const bebidasUnicas = [...new Set(drinks.map(d => d.bebida))];
+            const saboresBebidaUnicos = [...new Set(drinks.map(d => d.sabor_bebida))];
+            const energeticosUnicos = [...new Set(drinks.map(d => d.energetico))];
+            const saboresEnergeticoUnicos = [...new Set(drinks.map(d => d.sabor_energetico))];
+
+            const bebidaSelect = document.getElementById("bebida");
+            const saborBebidaSelect = document.getElementById("sabor-bebida");
+            const energeticoSelect = document.getElementById("energetico");
+            const saborEnergeticoSelect = document.getElementById("sabor-energetico");
+
+            bebidasUnicas.forEach(bebida => {
+                bebidaSelect.innerHTML += `<option value="${bebida}">${bebida}</option>`;
+            });
+
+            saboresBebidaUnicos.forEach(sabor => {
+                saborBebidaSelect.innerHTML += `<option value="${sabor}">${sabor}</option>`;
+            });
+
+            energeticosUnicos.forEach(energetico => {
+                energeticoSelect.innerHTML += `<option value="${energetico}">${energetico}</option>`;
+            });
+
+            saboresEnergeticoUnicos.forEach(sabor => {
+                saborEnergeticoSelect.innerHTML += `<option value="${sabor}">${sabor}</option>`;
+            });
+        }
+
+        // Filtra os drinks com base nas seleções
+        function filtrarDrinks() {
+            const bebidaSelecionada = document.getElementById("bebida").value;
+            const saborBebidaSelecionado = document.getElementById("sabor-bebida").value;
+            const energeticoSelecionado = document.getElementById("energetico").value;
+            const saborEnergeticoSelecionado = document.getElementById("sabor-energetico").value;
+
+            const drinksFiltrados = drinks.filter(drink => {
+                return (!bebidaSelecionada || drink.bebida === bebidaSelecionada) &&
+                       (!saborBebidaSelecionado || drink.sabor_bebida === saborBebidaSelecionado) &&
+                       (!energeticoSelecionado || drink.energetico === energeticoSelecionado) &&
+                       (!saborEnergeticoSelecionado || drink.sabor_energetico === saborEnergeticoSelecionado);
+            });
+
+            exibirDrinks(drinksFiltrados);
+        }
+
+        // Exibe os drinks na tela
+        function exibirDrinks(drinksParaExibir) {
+            const drinksList = document.getElementById("drinks-list");
+            drinksList.innerHTML = drinksParaExibir.map(drink => `
+                <div class="drink-card">
+                    <h3>${drink.bebida} ${drink.sabor_bebida !== "Tradicional" ? `(${drink.sabor_bebida})` : ''}</h3>
+                    <p>+ ${drink.energetico} ${drink.sabor_energetico !== "Tradicional" ? `(${drink.sabor_energetico})` : ''}</p>
+                    <p class="price">R$ ${drink.preco.toFixed(2)}</p>
+                    <button onclick="adicionarAoCarrinho(${drinks.indexOf(drink)})">Adicionar</button>
+                </div>
+            `).join("");
+        }
+
+        // Adiciona um drink ao carrinho
+        function adicionarAoCarrinho(index) {
+            const drinkSelecionado = drinks[index];
+            // Define o gelo padrão como "normal" ao adicionar
+            drinkSelecionado.gelo = "normal";
+            carrinho.push(drinkSelecionado);
+            atualizarCarrinho();
+        }
+
+        // Atualiza a exibição do carrinho
+        function atualizarCarrinho() {
+            const cartItems = document.getElementById("cart-items");
+            cartItems.innerHTML = carrinho.map((item, index) => `
+                <div class="cart-item">
+                    <div class="drink-info">
+                        <strong>${item.bebida} ${item.sabor_bebida !== "Tradicional" ? `(${item.sabor_bebida})` : ''}</strong><br>
+                        <small>+ ${item.energetico} ${item.sabor_energetico !== "Tradicional" ? `(${item.sabor_energetico})` : ''}</small>
+                    </div>
+                    <div class="gelo-options">
+                        <select class="gelo-select" data-index="${index}" onchange="atualizarTipoGelo(${index}, this.value)">
+                            ${opcoesGelo.map(gelo => `
+                                <option value="${gelo.id}" ${item.gelo === gelo.id ? 'selected' : ''}>${gelo.nome}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    <div class="price-delete">
+                        R$ ${item.preco.toFixed(2)} 
+                        <button onclick="removerDoCarrinho(${index})">🗑️</button>
+                    </div>
+                </div>
+            `).join("");
+
+            const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
+            document.getElementById("total").textContent = `Total: R$ ${total.toFixed(2)}`;
+        }
+
+        // Atualiza o tipo de gelo selecionado
+        function atualizarTipoGelo(index, tipoGelo) {
+            carrinho[index].gelo = tipoGelo;
+        }
+
+        // Remove um item do carrinho
+        function removerDoCarrinho(index) {
+            carrinho.splice(index, 1);
+            atualizarCarrinho();
+        }
+
+        // Finaliza o pedido e abre o WhatsApp
+        function finalizarPedido() {
+            if (carrinho.length === 0) {
+                alert("Adicione itens ao pedido antes de finalizar!");
+                return;
+            }
+
+            const numeroWhatsApp = "+5511971856196";
+            
+            let mensagem = "🍹 *PEDIDO DE DRINKS* 🍸\n\n";
+            mensagem += "Olá! Gostaria de pedir:\n\n";
+
+            carrinho.forEach((item, index) => {
+                const geloSelecionado = opcoesGelo.find(g => g.id === item.gelo) || opcoesGelo[0];
+                
+                mensagem += `*${index + 1}. ${item.bebida} ${item.sabor_bebida !== "Tradicional" ? `(${item.sabor_bebida})` : ''}*\n`;
+                mensagem += `   ➕ ${item.energetico} ${item.sabor_energetico !== "Tradicional" ? `(${item.sabor_energetico})` : ''}\n`;
+                mensagem += `   🧊 ${geloSelecionado.nome}\n`;
+                mensagem += `   💵 R$ ${item.preco.toFixed(2)}\n\n`;
+            });
+
+            const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
+            mensagem += `*TOTAL: R$ ${total.toFixed(2)}*`;
+
+            const urlWhatsApp = `https://wa.me/${+5511971856196}?text=${encodeURIComponent(mensagem)}`;
+            window.open(urlWhatsApp, "_blank");
+        }
+    </script>
+</body>
+</html>
